@@ -9,11 +9,10 @@
 <h3><a href="index.html">Home</a></h3>
 <hr>
 <h2>Meals</h2>
-
-<form action="newMeal.jsp" method="GET">
-    <button type="submit">Add meal</button>
+<form action="meals" method="GET">
+<input type="hidden" name="action" value="create">
+<button type="submit">Add meal</button>
 </form>
-
 <table border="1">
     <thead>
     <tr>
@@ -31,14 +30,15 @@
             <td>${meal.description}</td>
             <td>${meal.calories}</td>
             <td>
-                <form action="newMeal.jsp" method="GET">
+                <form action="meals" method="GET">
+                <input type="hidden" name="action" value="update">
                 <input type="hidden" name="id" value="${meal.id}">
                 <button type="submit">Edit</button>
                 </form>
             </td>
             <td>
                 <form action="meals?action=delete&id=${meal.id}" method="POST">
-                 <a href="#" onclick="this.parentNode.submit()">Delete</a>
+                   <button type="submit">Delete</button>
                 </form>
             </td>
         </tr>

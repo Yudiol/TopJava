@@ -1,6 +1,5 @@
-package ru.javawebinar.topjava.dao.impl;
+package ru.javawebinar.topjava.dao;
 
-import ru.javawebinar.topjava.dao.MealDao;
 import ru.javawebinar.topjava.model.Meal;
 
 import java.time.LocalDateTime;
@@ -10,10 +9,10 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
-public class MealDaoImpl implements MealDao {
+public class MealDaoInMemory implements MealDao {
 
-    AtomicInteger key = new AtomicInteger(7);
-    Map<Integer, Meal> mealMap = new ConcurrentHashMap<>();
+    private final AtomicInteger key = new AtomicInteger(7);
+    private final Map<Integer, Meal> mealMap = new ConcurrentHashMap<>();
 
     {
         mealMap.put(1, new Meal(1, LocalDateTime.of(2020, Month.JANUARY, 30, 10, 0), "Завтрак", 500));
@@ -31,17 +30,23 @@ public class MealDaoImpl implements MealDao {
     }
 
     public Meal findById(Integer id) {
-        return mealMap.getOrDefault(id, null);
+        return mealMap.get(id);
     }
 
-    public void create(Meal meal) {
+    public Meal create(Meal meal) {
         meal.setId(key.incrementAndGet());
         mealMap.put(key.get(), meal);
+        return meal;
     }
 
-    public void update(Meal updatedMeal) {
-        mealMap.put(updatedMeal.getId(), updatedMeal);
+    public Meal update(Meal updatedMeal) {
+        if (mealMap.get(updatedMeal.getId()) != null) {
+            mealMap.put(updatedMeal.getId(), updatedMeal);
+            return updatedMeal;
+        }
+        return null;
     }
+
 
     public void delete(Integer id) {
         mealMap.remove(id);

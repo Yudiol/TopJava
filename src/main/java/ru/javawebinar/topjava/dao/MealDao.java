@@ -9,9 +9,9 @@ public interface MealDao {
 
     Meal findById(Integer id);
 
-    void create(Meal meal);
+    Meal create(Meal meal);
 
-    void update(Meal updatedMeal);
+    Meal update(Meal updatedMeal);
 
     void delete(Integer id);
 }

@@ -1,7 +1,8 @@
 package ru.javawebinar.topjava.web;
 
 import org.slf4j.Logger;
-import ru.javawebinar.topjava.dao.impl.MealDaoImpl;
+import ru.javawebinar.topjava.dao.MealDao;
+import ru.javawebinar.topjava.dao.MealDaoInMemory;
 import ru.javawebinar.topjava.model.Meal;
 import ru.javawebinar.topjava.model.MealTo;
 import ru.javawebinar.topjava.util.MealsUtil;
@@ -14,27 +15,35 @@ import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
-import java.util.Objects;
 
 import static org.slf4j.LoggerFactory.getLogger;
 
 public class MealServlet extends HttpServlet {
 
-    private MealDaoImpl mealDao;
     private static final Logger log = getLogger(MealServlet.class);
-    private static final int CALORIES_PER_DAY = 2000;
+    private final MealDao mealDao = new MealDaoInMemory();
 
     @Override
-    public void init() {
-        this.mealDao = new MealDaoImpl();
-    }
+    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
+        request.setCharacterEncoding("UTF-8");
+        String action = request.getParameter("action");
 
-    @Override
-    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        response.setCharacterEncoding("UTF-8");
-        List<MealTo> meals = MealsUtil.filteredByStreams(mealDao.findAll(), LocalTime.MIN, LocalTime.MAX, CALORIES_PER_DAY);
-        request.setAttribute("meals", meals);
-        request.getRequestDispatcher("/meals.jsp").forward(request, response);
+        String forward = "/newMeal.jsp";
+        if ("update".equalsIgnoreCase(action)) {
+            int id = Integer.parseInt(request.getParameter("id"));
+            request.setAttribute("meal", mealDao.findById(id));
+            request.setAttribute("action", "update");
+            log.debug("Edit Meal");
+        } else if ("create".equalsIgnoreCase(action)) {
+            request.setAttribute("action", "create");
+            log.debug("Add property new meal");
+        } else {
+            List<MealTo> mealsTo = MealsUtil.filteredByStreams(mealDao.findAll(), LocalTime.MIN, LocalTime.MAX, 2000);
+            request.setAttribute("meals", mealsTo);
+            forward = "/meals.jsp";
+            log.debug("Show all meals");
+        }
+        request.getRequestDispatcher(forward).forward(request, response);
     }
 
     @Override
@@ -47,19 +56,19 @@ public class MealServlet extends HttpServlet {
         if ("delete".equalsIgnoreCase(action)) {
             log.debug("Delete Meal");
             mealDao.delete(Integer.parseInt(id));
-        } else if (Objects.equals(id, "null")) {
+        } else if ("create".equalsIgnoreCase(action)) {
             log.debug("Create meal");
             mealDao.create(new Meal(0,
                     LocalDateTime.parse(request.getParameter("localDate")),
                     description,
                     Integer.parseInt(request.getParameter("calories"))));
-        } else {
+        } else if ("update".equalsIgnoreCase(action)) {
             log.debug("Update meal");
             mealDao.update(new Meal(Integer.parseInt(id),
                     LocalDateTime.parse(request.getParameter("localDate")),
                     description,
                     Integer.parseInt(request.getParameter("calories"))));
         }
-        response.sendRedirect("/topjava/meals");
+        response.sendRedirect("/meals");
     }
 }
