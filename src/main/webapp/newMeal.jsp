@@ -14,7 +14,7 @@
         <tbody>
         <tr>
             <td>Date :</td>
-            <td><input type="datetime-local" name="localDate" value=${meal.dateTime.toString()}></td>
+            <td><input type="datetime-local" name="localDate" value=${meal.dateTime}></td>
         <tr/>
         <tr>
             <td>Description :</td>

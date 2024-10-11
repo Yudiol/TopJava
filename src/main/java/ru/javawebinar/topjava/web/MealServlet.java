@@ -1,8 +1,8 @@
 package ru.javawebinar.topjava.web;
 
 import org.slf4j.Logger;
+import ru.javawebinar.topjava.dao.InMemoryMealDao;
 import ru.javawebinar.topjava.dao.MealDao;
-import ru.javawebinar.topjava.dao.MealDaoInMemory;
 import ru.javawebinar.topjava.model.Meal;
 import ru.javawebinar.topjava.model.MealTo;
 import ru.javawebinar.topjava.util.MealsUtil;
@@ -21,11 +21,15 @@ import static org.slf4j.LoggerFactory.getLogger;
 public class MealServlet extends HttpServlet {
 
     private static final Logger log = getLogger(MealServlet.class);
-    private final MealDao mealDao = new MealDaoInMemory();
+    private MealDao mealDao;
+
+    @Override
+    public void init() {
+        mealDao = new InMemoryMealDao();
+    }
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
-        request.setCharacterEncoding("UTF-8");
         String action = request.getParameter("action");
 
         String forward = "/newMeal.jsp";
@@ -58,7 +62,7 @@ public class MealServlet extends HttpServlet {
             mealDao.delete(Integer.parseInt(id));
         } else if ("create".equalsIgnoreCase(action)) {
             log.debug("Create meal");
-            mealDao.create(new Meal(0,
+            mealDao.create(new Meal(null,
                     LocalDateTime.parse(request.getParameter("localDate")),
                     description,
                     Integer.parseInt(request.getParameter("calories"))));
@@ -69,6 +73,6 @@ public class MealServlet extends HttpServlet {
                     description,
                     Integer.parseInt(request.getParameter("calories"))));
         }
-        response.sendRedirect("/meals");
+        response.sendRedirect(request.getRequestURI());
     }
 }

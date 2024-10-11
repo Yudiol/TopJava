@@ -7,11 +7,11 @@ import java.util.Collection;
 public interface MealDao {
     Collection<Meal> findAll();
 
-    Meal findById(Integer id);
+    Meal findById(int id);
 
     Meal create(Meal meal);
 
     Meal update(Meal updatedMeal);
 
-    void delete(Integer id);
+    void delete(int id);
 }
