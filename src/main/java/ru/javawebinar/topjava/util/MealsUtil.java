@@ -13,7 +13,6 @@ import java.util.stream.Collectors;
 
 public class MealsUtil {
 
-
     public static List<MealTo> getTos(Collection<Meal> meals, int caloriesPerDay) {
         return filterByPredicate(meals, caloriesPerDay, meal -> true);
     }
@@ -31,7 +30,6 @@ public class MealsUtil {
 
         return meals.stream()
                 .filter(filter)
-                .sorted((a, b) -> a.getDateTime().compareTo(b.getDateTime()))
                 .map(meal -> createTo(meal, caloriesSumByDate.get(meal.getDate()) > caloriesPerDay))
                 .collect(Collectors.toList());
     }

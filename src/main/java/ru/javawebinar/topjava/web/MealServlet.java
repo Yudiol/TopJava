@@ -12,8 +12,11 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.temporal.ChronoUnit;
+import java.util.Arrays;
 import java.util.Objects;
 
 public class MealServlet extends HttpServlet {
@@ -30,22 +33,26 @@ public class MealServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
         request.setCharacterEncoding("UTF-8");
-        String id = request.getParameter("id");
-
-        Meal meal = new Meal(id.isEmpty() ? null : Integer.valueOf(id),
+        String mealId = request.getParameter("id");
+        Integer id = mealId.isEmpty() ? null : Integer.valueOf(mealId);
+        Meal meal = new Meal(id,
                 LocalDateTime.parse(request.getParameter("dateTime")),
                 request.getParameter("description"),
                 Integer.parseInt(request.getParameter("calories")));
 
-        log.info(meal.isNew() ? "Create {}" : "Update {}", meal);
-        mealRestController.save(meal);
+        if (!meal.isNew()) {
+            log.info("Update {}", meal);
+            mealRestController.update(id, meal);
+        } else {
+            log.info("Create {}", meal);
+            mealRestController.save(meal);
+        }
         response.sendRedirect("meals");
     }
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         String action = request.getParameter("action");
-
 
         switch (action == null ? "all" : action) {
             case "delete":
@@ -64,20 +71,20 @@ public class MealServlet extends HttpServlet {
                 break;
             case "filter":
                 log.info("filter");
-                request.setAttribute("meals",
-                        mealRestController.filter(
-                                request.getParameter("fromDate"),
-                                request.getParameter("toDate"),
-                                request.getParameter("fromTime"),
-                                request.getParameter("toTime")));
+                String fromDate = request.getParameter("fromDate");
+                String toDate = request.getParameter("toDate");
+                String fromTime = request.getParameter("fromTime");
+                String toTime = request.getParameter("toTime");
+                request.setAttribute("meals", mealRestController.filter(
+                                getLocalDate("from", fromDate),
+                                getLocalDate("to", toDate),
+                                getLocalTime("from", fromTime),
+                                getLocalTime("to", toTime)
+                        )
+                );
+                request.setAttribute("dateTime", Arrays.asList(fromDate, toDate, fromTime, toTime));
                 request.getRequestDispatcher("/meals.jsp").forward(request, response);
                 break;
-            case "auth":
-                log.info("auth");
-                String userId = request.getParameter("user_id");
-                if (userId != null) {
-                    SecurityUtil.setUserId(Integer.parseInt(userId));
-                }
             case "all":
             default:
                 log.info("getAll");
@@ -91,5 +98,26 @@ public class MealServlet extends HttpServlet {
     private int getId(HttpServletRequest request) {
         String paramId = Objects.requireNonNull(request.getParameter("id"));
         return Integer.parseInt(paramId);
+    }
+
+    @Override
+    public void destroy() {
+        appCtx.close();
+    }
+
+    private LocalDate getLocalDate(String pointer, String localDate) {
+        try {
+            return LocalDate.parse(localDate);
+        } catch (Exception e) {
+            return Objects.equals(pointer, "from") ? LocalDate.MIN : LocalDate.MAX;
+        }
+    }
+
+    private LocalTime getLocalTime(String pointer, String localTime) {
+        try {
+            return LocalTime.parse(localTime);
+        } catch (Exception e) {
+            return Objects.equals(pointer, "from") ? LocalTime.MIN : LocalTime.MAX;
+        }
     }
 }

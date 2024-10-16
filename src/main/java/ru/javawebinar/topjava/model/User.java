@@ -8,6 +8,8 @@ import java.util.Date;
 import java.util.EnumSet;
 import java.util.Set;
 
+import static ru.javawebinar.topjava.util.Store.DEFAULT_CALORIES_PER_DAY;
+
 public class User extends AbstractNamedEntity {
 
     private String email;
@@ -23,7 +25,7 @@ public class User extends AbstractNamedEntity {
     private int caloriesPerDay;
 
     public User(Integer id, String name, String email, String password, Role... roles) {
-        this(id, name, email, password, 2000, true, Arrays.asList(roles));
+        this(id, name, email, password, DEFAULT_CALORIES_PER_DAY, true, Arrays.asList(roles));
     }
 
     public User(Integer id, String name, String email, String password, int caloriesPerDay, boolean enabled, Collection<Role> roles) {

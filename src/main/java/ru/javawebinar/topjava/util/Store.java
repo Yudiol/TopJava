@@ -12,6 +12,8 @@ import java.util.List;
 
 public class Store {
 
+    public static final int DEFAULT_CALORIES_PER_DAY = 2000;
+
     public static final List<User> users = Arrays.asList(
             new User(null, "Will", "Will@mail.com",
                     "123", 2000, true, Arrays.asList(Role.USER, Role.ADMIN)),

@@ -5,6 +5,7 @@ import ru.javawebinar.topjava.model.User;
 import ru.javawebinar.topjava.repository.UserRepository;
 import ru.javawebinar.topjava.util.Store;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -14,7 +15,7 @@ import java.util.stream.Collectors;
 @Repository
 public class InMemoryUserRepository implements UserRepository {
     private final Map<Integer, User> users = new ConcurrentHashMap<>();
-    private final static AtomicInteger userId = new AtomicInteger();
+    private final AtomicInteger userId = new AtomicInteger();
 
     {
         Store.users.forEach(this::save);
@@ -29,7 +30,7 @@ public class InMemoryUserRepository implements UserRepository {
     public User save(User user) {
         if (user.isNew()) {
             user.setId(userId.incrementAndGet());
-            return this.users.put(user.getId(), user);
+            return this.users.computeIfAbsent(user.getId(), (a) -> user);
         }
         return users.computeIfPresent(user.getId(), (id, oldUser) -> user);
     }
@@ -42,7 +43,8 @@ public class InMemoryUserRepository implements UserRepository {
     @Override
     public List<User> getAll() {
         return users.values().stream()
-                .sorted((a, b) -> a.getName().compareTo(b.getName()))
+                .sorted(Comparator.comparing(User::getName)
+                        .thenComparing(User::getEmail))
                 .collect(Collectors.toList());
     }
 
